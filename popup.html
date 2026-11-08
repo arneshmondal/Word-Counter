@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Counter</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 6h10"/>
+            <path d="M6 10h10"/>
+            <path d="M6 14h6"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">Word Counter</h1>
+          <p id="pageDomain" class="page-domain" title="Current page">Detecting page...</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="copyBtn" class="icon-button" title="Copy stats to clipboard" aria-label="Copy summary">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+          </svg>
+        </button>
+        <button id="refreshBtn" class="icon-button" title="Recount / Refresh" aria-label="Refresh count">
+          <svg id="refreshIcon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+            <path d="M16 16h5v5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scope Tabs: Entire Page vs Selected Text -->
+    <nav class="scope-tabs" role="tablist">
+      <button id="tabEntirePage" class="tab-button active" role="tab" aria-selected="true">
+        <span>Full Page</span>
+      </button>
+      <button id="tabSelection" class="tab-button" role="tab" aria-selected="false">
+        <span>Selected Text</span>
+        <span id="selectionBadge" class="selection-badge">0</span>
+      </button>
+    </nav>
+
+    <!-- Main Content State -->
+    <main id="statsContainer" class="stats-container">
+      <!-- Big Hero Word Count -->
+      <section class="hero-card">
+        <div class="hero-label-row">
+          <span class="hero-label">TOTAL WORDS</span>
+          <span id="scopeTag" class="scope-pill">Full Page</span>
+        </div>
+        <div class="hero-number-wrapper">
+          <span id="wordCount" class="hero-number">0</span>
+        </div>
+      </section>
+
+      <!-- Secondary Metrics Grid -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-title">Characters</div>
+          <div id="charCount" class="stat-val">0</div>
+          <div class="stat-sub">with spaces</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">Characters</div>
+          <div id="charNoSpaceCount" class="stat-val">0</div>
+          <div class="stat-sub">no spaces</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">Sentences</div>
+          <div id="sentenceCount" class="stat-val">0</div>
+          <div class="stat-sub">avg length: <span id="avgSentenceWords">0</span> w</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">Paragraphs</div>
+          <div id="paragraphCount" class="stat-val">0</div>
+          <div class="stat-sub">blocks of text</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">Reading Time</div>
+          <div id="readingTime" class="stat-val">0 min</div>
+          <div class="stat-sub">~200 wpm speed</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">Speaking Time</div>
+          <div id="speakingTime" class="stat-val">0 min</div>
+          <div class="stat-sub">~130 wpm speed</div>
+        </div>
+      </section>
+
+      <!-- Top Keywords Section -->
+      <section id="keywordsSection" class="keywords-card">
+        <div class="section-heading">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="9" x2="20" y2="9"/>
+            <line x1="4" y1="15" x2="20" y2="15"/>
+            <line x1="10" y1="3" x2="8" y2="21"/>
+            <line x1="16" y1="3" x2="14" y2="21"/>
+          </svg>
+          <span>Top Keywords</span>
+        </div>
+        <div id="keywordsList" class="keywords-list">
+          <span class="keyword-empty">None detected</span>
+        </div>
+      </section>
+
+      <!-- Selection Hint Notice (shown when on selection tab with 0 words) -->
+      <div id="noSelectionNotice" class="notice-box hidden">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>Highlight text on the page with your cursor, then reopen or refresh this popup to count selected words.</span>
+      </div>
+    </main>
+
+    <!-- Restricted / Error State -->
+    <div id="restrictedState" class="restricted-container hidden">
+      <div class="restricted-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h2 id="restrictedTitle" class="restricted-title">Cannot Access This Page</h2>
+      <p id="restrictedMsg" class="restricted-desc">
+        Chrome extensions cannot run on internal system pages (<code>chrome://</code>, <code>about:</code>) or the Chrome Web Store due to browser security restrictions.
+      </p>
+      <div class="restricted-tip">
+        <strong>Tip:</strong> Try opening a website like a news article, blog post, or Wikipedia page and click the extension again!
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">Copied stats to clipboard!</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
